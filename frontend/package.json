@@ -1,0 +1,17 @@
+{
+  "name": "@margince-ext/issue-watch",
+  "private": true,
+  "type": "module",
+  "main": "index.tsx",
+  "peerDependencies": {
+    "@margince/frontend": "workspace:*",
+    "@tanstack/react-query": "^5.101.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "lucide-react": "^1.23.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
+  }
+}

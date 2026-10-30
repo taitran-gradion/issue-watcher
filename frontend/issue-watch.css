@@ -1,0 +1,192 @@
+/* The watcher: at the bottom right of every page, left of the sticky note's button. */
+.ext-issue-watch {
+  position: fixed;
+  right: calc(var(--space-6) + 3.25rem + var(--space-3));
+  bottom: var(--space-6);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+/* Closed: quiet while nothing is wrong, red once something is. */
+.ext-issue-watch-fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border: 1px solid var(--borderSubtle);
+  border-radius: 50%;
+  background: var(--bgElevated);
+  color: var(--textSecondary);
+  box-shadow: var(--shadow-pop);
+  cursor: pointer;
+}
+.ext-issue-watch-fab.has-issues {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--textOnAccent);
+}
+.ext-issue-watch-fab:focus-visible {
+  outline: 2px solid var(--dangerText);
+  outline-offset: 2px;
+}
+.ext-issue-watch-badge {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: calc(-1 * var(--space-1));
+  line-height: 1;
+}
+
+/* A toast per new issue, above the button. */
+.ext-issue-watch-toasts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  inline-size: min(24rem, calc(100vw - 2 * var(--space-6)));
+}
+.ext-issue-watch-toast {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--borderSubtle);
+  border-inline-start: 4px solid var(--danger);
+  border-radius: var(--r-md);
+  background: var(--bgElevated);
+  box-shadow: var(--shadow-pop);
+  color: var(--textPrimary);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.ext-issue-watch-toast.is-warning {
+  border-inline-start-color: var(--warning);
+}
+.ext-issue-watch-toast.is-info {
+  border-inline-start-color: var(--accent);
+}
+.ext-issue-watch-toast span {
+  overflow: hidden;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Open: this session's issues, newest first. */
+.ext-issue-watch-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  inline-size: min(28rem, calc(100vw - 2 * var(--space-6)));
+  max-block-size: min(36rem, calc(100vh - 2 * var(--space-6)));
+  padding: var(--space-3);
+  border: 1px solid var(--borderSubtle);
+  border-radius: var(--r-md);
+  background: var(--bgElevated);
+  box-shadow: var(--shadow-pop);
+}
+.ext-issue-watch-panel p {
+  margin: 0;
+}
+.ext-issue-watch-head,
+.ext-issue-watch-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.ext-issue-watch-item-head .badge,
+.ext-issue-watch-item-head > :first-child {
+  flex: none;
+}
+.ext-issue-watch-where {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ext-issue-watch-tools {
+  display: flex;
+  gap: var(--space-1);
+}
+.ext-issue-watch-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.ext-issue-watch-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-inline-start: 3px solid var(--danger);
+  border-radius: var(--r-sm, 4px);
+  background: var(--dangerBg);
+}
+.ext-issue-watch-item.is-warning {
+  border-inline-start-color: var(--warning);
+  background: var(--warningBg);
+}
+.ext-issue-watch-item.is-info {
+  border-inline-start-color: var(--accent);
+  background: var(--bgInset);
+}
+.ext-issue-watch-title,
+.ext-issue-watch-cell code {
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+.ext-issue-watch-reference {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+/* The Issues page. */
+.ext-issue-watch-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ext-issue-watch-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ext-issue-watch-error {
+  color: var(--dangerText);
+}
+
+/* How many GitHub issues are known about this screen, above the watcher. */
+.ext-issue-watch-github {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--warning);
+  border-radius: 999px;
+  background: var(--bgElevated);
+  color: var(--textPrimary);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.ext-issue-watch-github:focus-visible {
+  outline: 2px solid var(--warning);
+  outline-offset: 2px;
+}
+.ext-issue-watch-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--textPrimary);
+}

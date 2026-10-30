@@ -1,0 +1,342 @@
+# SPDX-License-Identifier: BUSL-1.1
+# SPDX-FileCopyrightText: 2026 Gradion
+#
+# Served under /v1/ext/issue-watch/: paths here are relative to /v1.
+overlay: 1.0.0
+info:
+  title: issue-watch
+  version: "0.1.0"
+actions:
+  - target: $.paths['/ext/issue-watch/report']
+    update:
+      post:
+        operationId: issueWatchReport
+        summary: Report a problem a member's browser saw; a known one counts up.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_issue
+        x-rbac-action: create
+        x-mcp-tool:
+          verb: issue_watch_report
+          version: 1.0.0
+          title: Report an issue
+          tier: auto_execute
+          scope: write
+          description: >-
+            Report one problem the app ran into on a page: a failed request, an app
+            error, a slow request, a stuck loading indicator or a problem on screen. The same problem on
+            the same kind of page counts up rather than adding an issue, and reopens
+            if it was resolved.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [kind, title, detail, pattern, page, reference, browser]
+                properties:
+                  kind: { type: string, enum: [server, refused, network, app, slow, stuck, ui] }
+                  title: { type: string, minLength: 1, maxLength: 300 }
+                  detail: { type: string, maxLength: 2000 }
+                  pattern: { type: string, minLength: 1, maxLength: 300 }
+                  page: { type: string, minLength: 1, maxLength: 300 }
+                  reference: { type: string, maxLength: 300 }
+                  browser: { type: string, maxLength: 300 }
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [id, kind, title, detail, pattern, last_page, reference, browser, occurrences, first_seen, last_seen, last_reporter]
+                  properties:
+                    id: { type: string, format: uuid }
+                    kind: { type: string, enum: [server, refused, network, app, slow, stuck, ui] }
+                    title: { type: string }
+                    detail: { type: string }
+                    pattern: { type: string }
+                    last_page: { type: string }
+                    reference: { type: string }
+                    browser: { type: string }
+                    occurrences: { type: integer }
+                    first_seen: { type: string, format: date-time }
+                    last_seen: { type: string, format: date-time }
+                    last_reporter: { type: string, format: uuid }
+                    resolved_at: { type: string, format: date-time }
+                    resolved_by: { type: string, format: uuid }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '422': { $ref: '#/components/responses/ValidationError' }
+  - target: $.paths['/ext/issue-watch/issues']
+    update:
+      get:
+        operationId: issueWatchList
+        summary: List issues, the most recently seen first.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_issue
+        x-rbac-action: read
+        parameters:
+          - name: status
+            in: query
+            required: false
+            schema: { type: string, enum: [open, resolved, all] }
+        x-mcp-tool:
+          verb: issue_watch_list
+          version: 1.0.0
+          title: List issues
+          tier: auto_execute
+          scope: read
+          description: >-
+            List the issues the app ran into in members' browsers, up to 200, the
+            most recently seen first: open ones, resolved ones, or all. It changes
+            nothing.
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [issues]
+                  properties:
+                    issues:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [id, kind, title, detail, pattern, last_page, reference, browser, occurrences, first_seen, last_seen, last_reporter]
+                        properties:
+                          id: { type: string, format: uuid }
+                          kind: { type: string, enum: [server, refused, network, app, slow, stuck, ui] }
+                          title: { type: string }
+                          detail: { type: string }
+                          pattern: { type: string }
+                          last_page: { type: string }
+                          reference: { type: string }
+                          browser: { type: string }
+                          occurrences: { type: integer }
+                          first_seen: { type: string, format: date-time }
+                          last_seen: { type: string, format: date-time }
+                          last_reporter: { type: string, format: uuid }
+                          resolved_at: { type: string, format: date-time }
+                          resolved_by: { type: string, format: uuid }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '422': { $ref: '#/components/responses/ValidationError' }
+  - target: $.paths['/ext/issue-watch/issues/resolve']
+    update:
+      post:
+        operationId: issueWatchResolve
+        summary: Mark an issue resolved; it reopens if it happens again.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_issue
+        x-rbac-action: update
+        x-mcp-tool:
+          verb: issue_watch_resolve
+          version: 1.0.0
+          title: Resolve an issue
+          tier: auto_execute
+          scope: write
+          description: >-
+            Mark one issue resolved. If the same problem happens again, the issue
+            reopens on its own.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [id]
+                properties:
+                  id: { type: string, format: uuid }
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [id, kind, title, detail, pattern, last_page, reference, browser, occurrences, first_seen, last_seen, last_reporter]
+                  properties:
+                    id: { type: string, format: uuid }
+                    kind: { type: string, enum: [server, refused, network, app, slow, stuck, ui] }
+                    title: { type: string }
+                    detail: { type: string }
+                    pattern: { type: string }
+                    last_page: { type: string }
+                    reference: { type: string }
+                    browser: { type: string }
+                    occurrences: { type: integer }
+                    first_seen: { type: string, format: date-time }
+                    last_seen: { type: string, format: date-time }
+                    last_reporter: { type: string, format: uuid }
+                    resolved_at: { type: string, format: date-time }
+                    resolved_by: { type: string, format: uuid }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '404': { $ref: '#/components/responses/NotFound' }
+          '422': { $ref: '#/components/responses/ValidationError' }
+  - target: $.paths['/ext/issue-watch/config']
+    update:
+      get:
+        operationId: issueWatchReadConfig
+        summary: Read what counts as an issue.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_config
+        x-rbac-action: read
+        x-mcp-tool:
+          verb: issue_watch_read_config
+          version: 1.0.0
+          title: Read issue watch settings
+          tier: auto_execute
+          scope: read
+          description: >-
+            Read what the watcher in every browser counts as an issue: which kinds of
+            problem, how slow is slow, how long a spinner may show, and what to
+            ignore. It changes nothing.
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [server_errors, refusals, app_errors, ui_problems, slow_ms, stuck_ms, toasts, ignore]
+                  properties:
+                    server_errors: { type: boolean }
+                    refusals: { type: boolean }
+                    app_errors: { type: boolean }
+                    ui_problems: { type: boolean }
+                    slow_ms: { type: integer, minimum: 0, maximum: 60000 }
+                    stuck_ms: { type: integer, minimum: 0, maximum: 120000 }
+                    toasts: { type: boolean }
+                    ignore:
+                      type: array
+                      maxItems: 20
+                      items: { type: string, maxLength: 200 }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+      post:
+        operationId: issueWatchSaveConfig
+        summary: Replace what counts as an issue.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_config
+        x-rbac-action: update
+        x-mcp-tool:
+          verb: issue_watch_save_config
+          version: 1.0.0
+          title: Save issue watch settings
+          tier: auto_execute
+          scope: write
+          description: >-
+            Replace what the watcher in every browser counts as an issue. Every
+            field is sent; a browser picks the change up on its next page load.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [server_errors, refusals, app_errors, ui_problems, slow_ms, stuck_ms, toasts, ignore]
+                properties:
+                  server_errors: { type: boolean }
+                  refusals: { type: boolean }
+                  app_errors: { type: boolean }
+                  ui_problems: { type: boolean }
+                  slow_ms: { type: integer, minimum: 0, maximum: 60000 }
+                  stuck_ms: { type: integer, minimum: 0, maximum: 120000 }
+                  toasts: { type: boolean }
+                  ignore:
+                    type: array
+                    maxItems: 20
+                    items: { type: string, maxLength: 200 }
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [server_errors, refusals, app_errors, ui_problems, slow_ms, stuck_ms, toasts, ignore]
+                  properties:
+                    server_errors: { type: boolean }
+                    refusals: { type: boolean }
+                    app_errors: { type: boolean }
+                    ui_problems: { type: boolean }
+                    slow_ms: { type: integer, minimum: 0, maximum: 60000 }
+                    stuck_ms: { type: integer, minimum: 0, maximum: 120000 }
+                    toasts: { type: boolean }
+                    ignore:
+                      type: array
+                      maxItems: 20
+                      items: { type: string, maxLength: 200 }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '422': { $ref: '#/components/responses/ValidationError' }
+  - target: $.paths['/ext/issue-watch/github']
+    update:
+      get:
+        operationId: issueWatchScreenGithub
+        summary: The open GitHub issues known about the screen a page is on.
+        tags: [Extensions]
+        x-rbac-object: ext_issue_watch_issue
+        x-rbac-action: read
+        parameters:
+          - name: page
+            in: query
+            required: true
+            schema: { type: string, minLength: 1, maxLength: 300 }
+        x-mcp-tool:
+          verb: issue_watch_screen_github
+          version: 1.0.0
+          title: GitHub issues on a screen
+          tier: auto_execute
+          scope: read
+          description: >-
+            List the open issues on the margince/margince GitHub tracker that are
+            about the screen a page is on, named by its route such as /deals/<id>,
+            each with why it matched: a path it names, a phrase it says or a
+            label. The match is by text, so an issue may be missed or misplaced.
+            It reads GitHub at most every 15 minutes and writes nothing there.
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [page, screen, repo, total, open, issues, sync_error]
+                  properties:
+                    page: { type: string }
+                    screen: { type: string }
+                    repo: { type: string }
+                    total: { type: integer }
+                    open: { type: integer }
+                    issues:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [number, title, url, labels, why]
+                        properties:
+                          number: { type: integer }
+                          title: { type: string }
+                          url: { type: string }
+                          labels:
+                            type: array
+                            items: { type: string }
+                          why: { type: string }
+                    synced_at: { type: string, format: date-time }
+                    sync_error: { type: string }
+          '401': { $ref: '#/components/responses/Unauthorized' }
+          '403': { $ref: '#/components/responses/Forbidden' }
+          '422': { $ref: '#/components/responses/ValidationError' }
